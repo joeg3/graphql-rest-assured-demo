@@ -1,0 +1,28 @@
+### Eclipse ###
+.checkstyle
+.classpath
+.project
+.settings
+bin/
+
+### IntelliJ ###
+.idea
+
+### Java ###
+.class
+.ear
+.jar
+.war
+
+### TestNG Report ###
+test-output/
+
+### Gradle ###
+.gradle
+/build/
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+### Vagrant ###
+.vagrant
