@@ -7,47 +7,55 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.path.json.JsonPath;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.example.graphqldemo.GraphqlBaseTest.GITHUB_NAME;
-import static org.example.graphqldemo.GraphqlBaseTest.GITHUB_URL;
+import static org.example.graphqldemo.BaseTest.GITHUB_NAME;
+import static org.example.graphqldemo.BaseTest.GITHUB_URL;
+import static org.example.graphqldemo.BaseTest.*;
 
-public class GraphqlTest {
+public class QueryTest {
   private static  RequestSpecification reqSpec;
   private static  ResponseSpecification resSpec;
 
-  @BeforeAll
-  static void beforeAllTests() {
-    reqSpec = GraphqlBaseTest.createRequestSpec();
-    resSpec = GraphqlBaseTest.createResponseSpec();
-  }
-
   @Test
-  void bodyAsStringResultAsJsonPath() {
-    String query = "{ viewer { name url } }";
+  void basicQueryWithoutVariable() {
+    // Since we use the personal access token in the header, which is set in the request specification,
+    // this should return info about that account
     String graphQL = "{ \"query\": \"query { viewer { name url } }\" }";
-    graphQL = String.format("{ \"query\": \"query %s\" }", query);
+    System.out.println("GraphQL passed as body to API: " + graphQL);
 
-    JsonPath jsonPath =
-      given()
-        .spec(reqSpec)
-        .body(graphQL)
-        .when()
-        .post("")
-        .then()
-        //.spec(resSpec)
-        //.log().body()
-        .extract().jsonPath();
+    JsonPath jsonPath = apiCall(graphQL);
 
     jsonPath.prettyPrint();
     assertThat(jsonPath.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
     assertThat(jsonPath.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
+  }
+
+  //@Test
+  void basicQueryWithVariable() {
+
+    // This works, login parameter hardcoded
+    String graphQL1 = "{ \"query\": \"{ organization(login: \\\"microsoft\\\") { name url } }\" }";
+
+
+    // Parameterize using the graphQL 'variables' construct
+    // Since we are doing this in Java, and not in a script, I don't think it really gains much
+    String graphQL2 = "{ \"query\": \"query ($organization: String!) { organization(login: $organization) { name url } }\",\"variables\": \"{\\\"organization\\\": \\\"microsoft\\\"}\"}";
+
+    // Default parameter
+    String graphQL3 = "{ \"query\": \"query ($organization: String = \\\"microsoft\\\") { organization(login: $organization) { name url } }\"}";
+
+    // Set the graphQL passed to api
+    String graphQL = graphQL1;
+    System.out.println("GraphQL passed as body to API: " + graphQL);
+
+    JsonPath jsonPath = apiCall(graphQL);
+
+    jsonPath.prettyPrint();
+    assertThat(jsonPath.getString("data.organization.name")).isEqualTo("Microsoft");
+    assertThat(jsonPath.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
   }
 
   //@Test
