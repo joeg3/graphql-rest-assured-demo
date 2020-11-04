@@ -1,9 +1,7 @@
 package org.example.graphqldemo;
 
 import io.restassured.path.json.JsonPath;
-//import org.example.graphqldemo.selectionset.GraphQlQuery;
 import org.example.graphqldemo.dto.GraphQLPayloadDTO;
-//import org.example.graphqldemo.selectionset.QueryDTO;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -64,11 +62,11 @@ public class QueryWithObjectTest {
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
   }
 
-  //@Test
+  @Test
   void queryPassArgumentToFieldWithFragment() {
-    // The organization field accepts a login argument
-    String organizationFieldsFragment = "fragment organizationFields on Organization{name url }";
-    String graphQL = String .format("{ \"query\": \"{ organization(login: \\\"microsoft\\\") { ...organizationFields } } %s\" }", organizationFieldsFragment);
+    String organizationFieldsFragment = "fragment organizationFields on Organization{name url}";
+    String queryStr = String .format("{ organization(login: \"microsoft\") { ...organizationFields } } %s", organizationFieldsFragment);
+    GraphQLPayloadDTO graphQL = new GraphQLPayloadDTO().setQuery(queryStr);
 
     JsonPath json = apiCall(graphQL);
 
@@ -76,16 +74,35 @@ public class QueryWithObjectTest {
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
   }
 
-  //@Test
-  //@DisplayName("Use query keyword to accept arguments, along with fragment")
+  @Test
   void queryUsingQueryKeywordWithFragment() {
     // The organization field accepts a login argument but does not have a parameter for "first"
     // We use the query keyword to accept "orgName" and "first" arguments, and "first" can be used in the fragment
     String organizationFieldsFragmentWithFirstParam = "fragment organizationFields on Organization{name url repositories(first: $first) {edges{node{name description}} totalCount} }";
-    String graphQL = String .format("{ \"query\": \" query ($orgName: String = \\\"microsoft\\\" $first: Int = 4) { organization(login: $orgName) { ...organizationFields } } %s\" }", organizationFieldsFragmentWithFirstParam);
-    System.out.println("Fragment graphql: " + graphQL);
+    String queryStr = String .format("query ($orgName: String = \"microsoft\" $first: Int = 4) { organization(login: $orgName) { ...organizationFields } } %s", organizationFieldsFragmentWithFirstParam);
+    GraphQLPayloadDTO graphQL = new GraphQLPayloadDTO().setQuery(queryStr);
+
     JsonPath json = apiCall(graphQL);
-json.prettyPrint();
+
+    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
+    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    assertThat(json.getInt("data.organization.repositories.edges.size")).isEqualTo(4);
+  }
+
+  @Test
+  void queryUsingVariablesAndFragment() {
+    // The organization field accepts a login argument but does not have a parameter for "first"
+    // We use the query keyword to accept "orgName" and "first" arguments, and "first" can be used in the fragment
+    String organizationFieldsFragmentWithFirstParam = "fragment organizationFields on Organization{name url repositories(first: $first) {edges{node{name description}} totalCount} }";
+    String queryStr = String .format("query ($orgName: String! $first: Int!) { organization(login: $orgName) { ...organizationFields } } %s", organizationFieldsFragmentWithFirstParam);
+    GraphQLPayloadDTO graphQL = new GraphQLPayloadDTO().setQuery(queryStr);
+    Map<String, Object> variables = new HashMap<>();
+    variables.put("orgName", "microsoft");
+    variables.put("first", 4);
+    graphQL.setVariables(variables);
+
+    JsonPath json = apiCall(graphQL);
+
     assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
     assertThat(json.getInt("data.organization.repositories.edges.size")).isEqualTo(4);

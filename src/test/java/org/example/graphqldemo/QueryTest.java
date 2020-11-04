@@ -1,14 +1,6 @@
 package org.example.graphqldemo;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.path.json.JsonPath;
-//import org.example.graphqldemo.selectionset.GraphQlQuery;
-import org.example.graphqldemo.selectionset.Query;
-//import org.example.graphqldemo.selectionset.QueryDTO;
-import org.example.graphqldemo.selectionset.Viewer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +39,6 @@ public class QueryTest {
 
     JsonPath json = apiCall(graphQL);
 
-    json.prettyPrint();
     assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
   }
@@ -81,51 +72,11 @@ public class QueryTest {
     // We use the query keyword to accept "orgName" and "first" arguments, and "first" can be used in the fragment
     String organizationFieldsFragmentWithFirstParam = "fragment organizationFields on Organization{name url repositories(first: $first) {edges{node{name description}} totalCount} }";
     String graphQL = String .format("{ \"query\": \" query ($orgName: String = \\\"microsoft\\\" $first: Int = 4) { organization(login: $orgName) { ...organizationFields } } %s\" }", organizationFieldsFragmentWithFirstParam);
-    System.out.println("Fragment graphql: " + graphQL);
+
     JsonPath json = apiCall(graphQL);
-json.prettyPrint();
+
     assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
     assertThat(json.getInt("data.organization.repositories.edges.size")).isEqualTo(4);
   }
-
-  //@Test
- // void bodyUsingQueryObject() throws JsonProcessingException {
-    //String query = "{ viewer { name url } }";
-    //String graphQL = "{ \"query\": \"query { viewer { name url } }\" }";
-    //graphQL = String.format("{ \"query\": \"query %s\" }", query);
-    //System.out.println("************************ GraphQL Query we want:\n" + graphQL);
-
-//    QueryDTO graphQLqueryObject = new QueryDTO();
-//    graphQLqueryObject.setQuery("query { viewer { name url } }");
-
-//    GraphQlQuery graphQlQuery = new GraphQlQuery();
-//    Query q = new Query();
-//    Viewer v = new Viewer();
-//    v.setName("");
-//    v.setUrl("");
-//    q.setViewer(v);
-//    graphQlQuery.setQuery(q);
-//
-//    ObjectMapper objectMapper = new ObjectMapper();
-//    objectMapper.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES,false);
-//    objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-//    String queryString = objectMapper.writeValueAsString(graphQlQuery);
-//    String viewString = objectMapper.writeValueAsString(v);
-//    String innerQueryString = objectMapper.writeValueAsString(q);
-//    // { "query": "query { viewer { name url } }" }
-//System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& queryString: " + queryString);
-//    System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& viewString: " + viewString);
-//    System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& innerQueryString: " + innerQueryString);
-//    String finalQuery = String.format("{ \"query\": \"query %s\" }", innerQueryString);
-//    System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& finalQuery: " + finalQuery);
-//    QueryDTO graphQLqueryObject = new QueryDTO();
-//    graphQLqueryObject.setQuery(queryString);
-//
-//    JsonPath jsonPath = apiCall(finalQuery);
-//
-//    jsonPath.prettyPrint();
-//
-//  }
-
 }
