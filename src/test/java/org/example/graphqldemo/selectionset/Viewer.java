@@ -1,4 +1,4 @@
-package org.example.graphqldemo;
+package org.example.graphqldemo.selectionset;
 
 public class Viewer {
   private String name;

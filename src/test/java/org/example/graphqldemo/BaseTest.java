@@ -6,6 +6,7 @@ import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
+import org.example.graphqldemo.dto.GraphQLPayloadDTO;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -62,6 +63,18 @@ public class BaseTest {
         .spec(RES_SPEC)
         //.log().body()
         .extract().jsonPath();
+  }
+
+  public static JsonPath apiCall(GraphQLPayloadDTO graphQL) {
+    return given()
+      .spec(REQ_SPEC)
+      .body(graphQL)
+      .when()
+      .post("")
+      .then()
+      .spec(RES_SPEC)
+      //.log().body()
+      .extract().jsonPath();
   }
 
   private static void loadPropertiesFile() throws IOException {
