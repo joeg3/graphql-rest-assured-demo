@@ -3,17 +3,24 @@ package org.example.graphqldemo;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
+import org.example.graphqldemo.dto.GraphQLPayloadDTO;
 
 import java.io.IOException;
 import java.util.Properties;
 
-public class GraphqlBaseTest {
+import static io.restassured.RestAssured.given;
+
+public class BaseTest {
   public static final String GITHUB_TOKEN = System.getProperty("github.token");
 
   // Platform property passed in and verified in Gradle
   public static final String PLATFORM = System.getProperty("platform");
+
+  public static  RequestSpecification REQ_SPEC;
+  public static  ResponseSpecification RES_SPEC;
 
   // Values from config.properties
   private static String BASE_URI;
@@ -24,6 +31,8 @@ public class GraphqlBaseTest {
   static {
     try {
       loadPropertiesFile();
+      REQ_SPEC = createRequestSpec();
+      RES_SPEC = createResponseSpec();
     } catch (IOException e) {
       throw new ExceptionInInitializerError(e);
     }
@@ -42,6 +51,30 @@ public class GraphqlBaseTest {
       .expectStatusCode(200)
       .expectContentType(ContentType.JSON)
       .build();
+  }
+
+  public static JsonPath apiCall(String graphQL) {
+    return given()
+        .spec(REQ_SPEC)
+        .body(graphQL)
+        .when()
+        .post("")
+        .then()
+        .spec(RES_SPEC)
+        //.log().body()
+        .extract().jsonPath();
+  }
+
+  public static JsonPath apiCall(GraphQLPayloadDTO graphQL) {
+    return given()
+      .spec(REQ_SPEC)
+      .body(graphQL)
+      .when()
+      .post("")
+      .then()
+      .spec(RES_SPEC)
+      //.log().body()
+      .extract().jsonPath();
   }
 
   private static void loadPropertiesFile() throws IOException {
