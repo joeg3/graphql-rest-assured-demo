@@ -13,9 +13,29 @@ public class QueryTest {
   void basicQueryWithoutVariable() {
     // Since we use the personal access token in the header, which is set in the request specification,
     // this should return expected name and url that is setup in config file
-    String graphQL = "{ \"query\": \"query { viewer { name url } }\" }";
+
+    // Here we don't use the 'query' keyword
+    String graphQL = "{ \"query\": \"{ viewer { name url } }\" }";
 
     JsonPath json = apiCall(graphQL);
+
+    assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
+    assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
+
+    // Here we use the 'query' keyword for operation type
+    graphQL = "{ \"query\": \"query { viewer { name url } }\" }";
+
+    json = apiCall(graphQL);
+
+    assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
+    assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
+
+    // Here we also come up with an operation name that we add
+    // The GraphQL documentation recommends using the operation type keyword and
+    // operation name to make things less ambiguous
+    graphQL = "{ \"query\": \"query NameAndUrl{ viewer { name url } }\" }";
+
+    json = apiCall(graphQL);
 
     assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
     assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
@@ -23,7 +43,7 @@ public class QueryTest {
 
   @Test
   void queryWithHardcodedVariables() {
-    String graphQL = "{ \"query\": \"{ organization(login: \\\"microsoft\\\") { name url repositories(first: 4) {edges{node{name description}} totalCount} } }\" }";
+    String graphQL = "{ \"query\": \"query MicrosoftFourRepos{ organization(login: \\\"microsoft\\\") { name url repositories(first: 4) {edges{node{name description}} totalCount} } }\" }";
 
     JsonPath json = apiCall(graphQL);
 
@@ -35,7 +55,7 @@ public class QueryTest {
   void queryWithVariablesQueryParameter() {
     // Parameterize using the graphQL 'variables' construct
     // Since we are doing this in Java, and not in a script, I don't think it really gains much
-    String graphQL = "{ \"query\": \"query ($orgName: String!) { organization(login: $orgName) { name url } }\",\"variables\": \"{\\\"orgName\\\": \\\"microsoft\\\"}\"}";
+    String graphQL = "{ \"query\": \"query OrgUrl($orgName: String!) { organization(login: $orgName) { name url } }\",\"variables\": \"{\\\"orgName\\\": \\\"microsoft\\\"}\"}";
 
     JsonPath json = apiCall(graphQL);
 
@@ -45,7 +65,7 @@ public class QueryTest {
 
   @Test
   void queryWithDefaultParameter() {
-    String graphQL = "{ \"query\": \"query ($orgName: String = \\\"microsoft\\\") { organization(login: $orgName) { name url } }\"}";
+    String graphQL = "{ \"query\": \"query MicrosoftOrgUrl($orgName: String = \\\"microsoft\\\") { organization(login: $orgName) { name url } }\"}";
 
     JsonPath json = apiCall(graphQL);
 
@@ -57,7 +77,7 @@ public class QueryTest {
   void queryPassArgumentToFieldWithFragment() {
     // The organization field accepts a login argument
     String organizationFieldsFragment = "fragment organizationFields on Organization{name url }";
-    String graphQL = String .format("{ \"query\": \"{ organization(login: \\\"microsoft\\\") { ...organizationFields } } %s\" }", organizationFieldsFragment);
+    String graphQL = String .format("{ \"query\": \"query OrgUrl{ organization(login: \\\"microsoft\\\") { ...organizationFields } } %s\" }", organizationFieldsFragment);
 
     JsonPath json = apiCall(graphQL);
 
@@ -71,7 +91,7 @@ public class QueryTest {
     // The organization field accepts a login argument but does not have a parameter for "first"
     // We use the query keyword to accept "orgName" and "first" arguments, and "first" can be used in the fragment
     String organizationFieldsFragmentWithFirstParam = "fragment organizationFields on Organization{name url repositories(first: $first) {edges{node{name description}} totalCount} }";
-    String graphQL = String .format("{ \"query\": \" query ($orgName: String = \\\"microsoft\\\" $first: Int = 4) { organization(login: $orgName) { ...organizationFields } } %s\" }", organizationFieldsFragmentWithFirstParam);
+    String graphQL = String .format("{ \"query\": \" query FourReposForOrg($orgName: String = \\\"microsoft\\\" $first: Int = 4) { organization(login: $orgName) { ...organizationFields } } %s\" }", organizationFieldsFragmentWithFirstParam);
 
     JsonPath json = apiCall(graphQL);
 

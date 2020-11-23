@@ -77,6 +77,18 @@ public class BaseTest {
       .extract().jsonPath();
   }
 
+  public static <T> T apiCall(GraphQLPayloadDTO graphQL, Class<T> responseClass) {
+    return given()
+      .spec(REQ_SPEC)
+      .body(graphQL)
+      .when()
+      .post("")
+      .then()
+      .spec(RES_SPEC)
+      //.log().body()
+      .extract().as(responseClass);
+  }
+
   private static void loadPropertiesFile() throws IOException {
     Properties properties = new Properties();
     properties.load(ClassLoader.getSystemResourceAsStream("config.properties"));

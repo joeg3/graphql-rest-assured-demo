@@ -1,7 +1,9 @@
 package org.example.graphqldemo;
 
-import io.restassured.path.json.JsonPath;
 import org.example.graphqldemo.dto.GraphQLPayloadDTO;
+import org.example.graphqldemo.dto.GraphQLResponseDTO;
+import org.example.graphqldemo.dto.OrganizationDTO;
+import org.example.graphqldemo.dto.ViewerDTO;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -10,7 +12,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.graphqldemo.BaseTest.*;
 
-public class QueryWithObjectTest {
+public class QueryReturnObjectTest {
 
   @Test
   void basicQueryWithoutVariable() {
@@ -18,10 +20,11 @@ public class QueryWithObjectTest {
     // this should return expected name and url that is setup in config file
     GraphQLPayloadDTO graphQL = new GraphQLPayloadDTO().setQuery("query NameAndUrl{ viewer { name url } }");
 
-    JsonPath json = apiCall(graphQL);
+    GraphQLResponseDTO resp = apiCall(graphQL, GraphQLResponseDTO.class);
+    ViewerDTO viewer = resp.getData().getViewer();
 
-    assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
-    assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
+    assertThat(viewer.getName()).isEqualTo(GITHUB_NAME);
+    assertThat(viewer.getUrl()).isEqualTo(GITHUB_URL);
   }
 
   @Test
@@ -29,10 +32,12 @@ public class QueryWithObjectTest {
     String queryStr = "query MicrosoftFourRepos{ organization(login: \"microsoft\") { name url repositories(first: 4) {edges{node{name description}} totalCount} } }";
     GraphQLPayloadDTO graphQL = new GraphQLPayloadDTO().setQuery(queryStr);
 
-    JsonPath json = apiCall(graphQL);
+    GraphQLResponseDTO resp = apiCall(graphQL, GraphQLResponseDTO.class);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    OrganizationDTO org = resp.getData().getOrganization();
+    assertThat(org.getName()).isEqualTo("Microsoft");
+    assertThat(org.getUrl()).isEqualTo("https://github.com/microsoft");
+    assertThat(org.getRepositories().getEdges().size()).isEqualTo(4);
   }
 
   @Test
@@ -45,10 +50,11 @@ public class QueryWithObjectTest {
     variables.put("orgName", "microsoft");
     graphQL.setVariables(variables);
 
-    JsonPath json = apiCall(graphQL);
+    GraphQLResponseDTO resp = apiCall(graphQL, GraphQLResponseDTO.class);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    OrganizationDTO org = resp.getData().getOrganization();
+    assertThat(org.getName()).isEqualTo("Microsoft");
+    assertThat(org.getUrl()).isEqualTo("https://github.com/microsoft");
   }
 
   @Test
@@ -56,10 +62,12 @@ public class QueryWithObjectTest {
     String queryStr = "query MicrosoftOrgUrl($orgName: String = \"microsoft\") { organization(login: $orgName) { name url repositories(first: 4) {edges{node{name description}} totalCount}} }";
     GraphQLPayloadDTO graphQL = new GraphQLPayloadDTO().setQuery(queryStr);
 
-    JsonPath json = apiCall(graphQL);
+    GraphQLResponseDTO resp = apiCall(graphQL, GraphQLResponseDTO.class);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    OrganizationDTO org = resp.getData().getOrganization();
+    assertThat(org.getName()).isEqualTo("Microsoft");
+    assertThat(org.getUrl()).isEqualTo("https://github.com/microsoft");
+    assertThat(org.getRepositories().getEdges().size()).isEqualTo(4);
   }
 
   @Test
@@ -68,10 +76,11 @@ public class QueryWithObjectTest {
     String queryStr = String .format("query OrgUrl{ organization(login: \"microsoft\") { ...organizationFields } } %s", organizationFieldsFragment);
     GraphQLPayloadDTO graphQL = new GraphQLPayloadDTO().setQuery(queryStr);
 
-    JsonPath json = apiCall(graphQL);
+    GraphQLResponseDTO resp = apiCall(graphQL, GraphQLResponseDTO.class);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    OrganizationDTO org = resp.getData().getOrganization();
+    assertThat(org.getName()).isEqualTo("Microsoft");
+    assertThat(org.getUrl()).isEqualTo("https://github.com/microsoft");
   }
 
   @Test
@@ -82,11 +91,12 @@ public class QueryWithObjectTest {
     String queryStr = String .format("query FourReposForOrg($orgName: String = \"microsoft\" $first: Int = 4) { organization(login: $orgName) { ...organizationFields } } %s", organizationFieldsFragmentWithFirstParam);
     GraphQLPayloadDTO graphQL = new GraphQLPayloadDTO().setQuery(queryStr);
 
-    JsonPath json = apiCall(graphQL);
+    GraphQLResponseDTO resp = apiCall(graphQL, GraphQLResponseDTO.class);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
-    assertThat(json.getInt("data.organization.repositories.edges.size")).isEqualTo(4);
+    OrganizationDTO org = resp.getData().getOrganization();
+    assertThat(org.getName()).isEqualTo("Microsoft");
+    assertThat(org.getUrl()).isEqualTo("https://github.com/microsoft");
+    assertThat(org.getRepositories().getEdges().size()).isEqualTo(4);
   }
 
   @Test
@@ -101,10 +111,11 @@ public class QueryWithObjectTest {
     variables.put("first", 4);
     graphQL.setVariables(variables);
 
-    JsonPath json = apiCall(graphQL);
+    GraphQLResponseDTO resp = apiCall(graphQL, GraphQLResponseDTO.class);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
-    assertThat(json.getInt("data.organization.repositories.edges.size")).isEqualTo(4);
+    OrganizationDTO org = resp.getData().getOrganization();
+    assertThat(org.getName()).isEqualTo("Microsoft");
+    assertThat(org.getUrl()).isEqualTo("https://github.com/microsoft");
+    assertThat(org.getRepositories().getEdges().size()).isEqualTo(4);
   }
 }
