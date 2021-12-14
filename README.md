@@ -1,6 +1,6 @@
 # Demo of Rest Assured for testing GraphQL APIs
 
-- This GraphQL demo tests against a GitHub API at https://api.github.com/graphql using a personal access token
+- This GraphQL demo tests against a GitHub API at https://api.github.com/graphql using a [personal access token](https://github.com/settings/tokens)
 - To create a token: https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
 - GitHub GraphQL API: https://developer.github.com/v4/
 - GitHub GraphQL Docs: https://docs.github.com/en/free-pro-team@latest/graphql
