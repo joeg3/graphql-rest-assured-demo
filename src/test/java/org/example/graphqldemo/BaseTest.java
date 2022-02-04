@@ -54,39 +54,42 @@ public class BaseTest {
   }
 
   public static JsonPath apiCall(String graphQL) {
-    return given()
-        .spec(REQ_SPEC)
-        .body(graphQL)
-        .when()
-        .post("")
-        .then()
-        .spec(RES_SPEC)
-        //.log().body()
-        .extract().jsonPath();
+    return given().
+        spec(REQ_SPEC).
+        // log().all().
+        body(graphQL).
+        when().
+        post("").
+        then().
+        spec(RES_SPEC).
+        // log().body().
+        extract().jsonPath();
   }
 
   public static JsonPath apiCall(GraphQLPayloadDTO graphQL) {
-    return given()
-      .spec(REQ_SPEC)
-      .body(graphQL)
-      .when()
-      .post("")
-      .then()
-      .spec(RES_SPEC)
-      //.log().body()
-      .extract().jsonPath();
+    return given().
+      spec(REQ_SPEC).
+      // log().all().
+      body(graphQL).
+      when().
+      post("").
+      then().
+      spec(RES_SPEC).
+      // log().body().
+      extract().jsonPath();
   }
 
   public static <T> T apiCall(GraphQLPayloadDTO graphQL, Class<T> responseClass) {
-    return given()
-      .spec(REQ_SPEC)
-      .body(graphQL)
-      .when()
-      .post("")
-      .then()
-      .spec(RES_SPEC)
-      //.log().body()
-      .extract().as(responseClass);
+    return given().
+    spec(REQ_SPEC).
+      // log().all().
+      body(graphQL).
+      when().
+      post("").
+      then().
+      spec(RES_SPEC).
+      // log().body().
+      extract().as(responseClass);
   }
 
   private static void loadPropertiesFile() throws IOException {

@@ -3,7 +3,7 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral() // Repository from which we retrieve dependency libraries
 }
 
 dependencies {

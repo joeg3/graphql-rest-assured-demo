@@ -10,6 +10,26 @@ import static org.example.graphqldemo.BaseTest.*;
 public class QueryTest {
 
   @Test
+  void basicQueryWithTextBlock() {
+    // Here we don't use the 'query' keyword
+    String graphQL = """
+            { \"query\": \"query \
+                              NameAndUrl { \
+                                viewer { \
+                                  name \
+                                  url \
+                                } \
+                              } \
+                          \" }
+            """;
+    //graphQL = "{ \"query\": \"query NameAndUrl{ viewer { name url } }\" }";
+    JsonPath json = apiCall(graphQL);
+//json.prettyPrint();
+    assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
+    assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
+  }
+
+  @Test
   void basicQueryWithoutVariable() {
     // Since we use the personal access token in the header, which is set in the request specification,
     // this should return expected name and url that is setup in config file
