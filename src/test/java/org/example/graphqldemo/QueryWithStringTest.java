@@ -7,56 +7,35 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.graphqldemo.BaseTest.*;
 
+/**
+ * This is the most basic way to test GraphQL apis with,
+ * Rest Assured - just pass a string. But it can get hard
+ * to read for morre complex queries
+ */
 public class QueryWithStringTest {
-
-  @Test
-  void basicQueryWithTextBlock() {
-    // Here we don't use the 'query' keyword
-    String graphQL = """
-            { \"query\": \"query \
-                              NameAndUrl { \
-                                viewer { \
-                                  name \
-                                  url \
-                                } \
-                              } \
-                          \" }
-            """;
-    //graphQL = "{ \"query\": \"query NameAndUrl{ viewer { name url } }\" }";
-    JsonPath json = apiCall(graphQL);
-//json.prettyPrint();
-    assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
-    assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
-  }
 
   @Test
   void basicQueryWithoutVariable() {
     // Since we use the personal access token in the header, which is set in the request specification,
-    // this should return expected name and url that is setup in config file
+    // this should return expected name and url that is set up in config file
 
     // Here we don't use the 'query' keyword
     String graphQL = "{ \"query\": \"{ viewer { name url } }\" }";
-
     JsonPath json = apiCall(graphQL);
-
     assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
     assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
 
     // Here we use the 'query' keyword for operation type
     graphQL = "{ \"query\": \"query { viewer { name url } }\" }";
-
     json = apiCall(graphQL);
-
     assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
     assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
 
-    // Here we also come up with an operation name that we add
-    // The GraphQL documentation recommends using the operation type keyword and
-    // operation name to make things less ambiguous
+    // Here we also come up with an operation name that we add.
+    // The GraphQL documentation recommends using the operation type
+    // keyword and operation name to make things less ambiguous
     graphQL = "{ \"query\": \"query NameAndUrl{ viewer { name url } }\" }";
-
     json = apiCall(graphQL);
-
     assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
     assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
   }
