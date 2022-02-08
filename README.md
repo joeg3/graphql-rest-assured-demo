@@ -1,27 +1,41 @@
-# Demo of Rest Assured for testing GraphQL APIs
+# graphql-rest-assured-demo
+Demo of Rest Assured for testing GraphQL APIs
 
+## Project Info
 - This GraphQL demo tests against a GitHub API at https://api.github.com/graphql using a [personal access token](https://github.com/settings/tokens)
-- To create a token: https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
-- GitHub GraphQL API: https://developer.github.com/v4/
-- GitHub GraphQL Docs: https://docs.github.com/en/free-pro-team@latest/graphql
+- Test Cases: all test classes run the same tests, but do it in different ways:
+    - Tests in the `QueryWithStringTest` class just put the GraphQL queries in strings.
+    - Tests in the `QueryWithTextBlockTest` class uses text blocks for GraphQL queries in the `GraphQLQueries` class where they are more readable and reusable.
+    - Tests in the `QueryWithObjectTest` class reuses the text blocks from the previous test cases, and uses an object instead of strings for the JSON boilerplate that Rest Assured needs to send.
+    - Tests in the `QueryReturnObjectTest` class is like `QueryWithObjectTest` except they return Java POJO objects instead of `JsonPath`.
 
-## To Create a Project Like This From Scratch
+## To Create a Java Project Like This From Scratch
 - Install `gradle`.
-- Create project folder, in this case `rest-assured-demo` and `cd` into it.
+- Create project folder, in this case `graphql-rest-assured-demo` and `cd` into it.
 - Run `gradle init --type java-library`. I selected defaults for all the prompts except Source Package, which I named `org.example`.
 
 ## Test Configuration
-- This demo allows for switching between different platforms such as `test` and `staging`
-- Properties for each platform can be defined in `src/test/resources/config.properties`
+- You'll need to [create a GitHub token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) for authentication.
+- This project uses a Gradle project property called `platform` to show how a test suite can be configured for different api endpoints to test against (test, staging). For each platform, its corresponding REST endpoint URL and other values are setup in `src/test/resources/config.properties`. At runtime, you select which platform to run the tests against.
+- The test will not run without the two Gradle properties: GitHub token, and test platform. The `github.token` and `platform` properties can be specified on the command line, as an environment variable, or in a Gradle properties file (see next section).
+- It's easiest to set default values for each of these properties as environment variables or in property files and then override as needed from the command line.
+
+## Gradle Project Properties
+Here are the ways to specify the required `platform` and `github.token` properties for the Gradle build, in order of precedence. These examples override both properties, but you can override just one property.
+1. Command line, specify property: `./gradlew test -Pplatform=staging -Pgithub.token=123456`
+2. Command line, Java system property: `./gradlew test -Dorg.gradle.project.platform=staging -Pgithub.token=123456`. However, I read that Gradle may fork the build in a new JVM, so the -D argument may not be passed along.
+3. Environment variable: `ORG_GRADLE_PROJECT_platform=staging ORG_GRADLE_PROJECT_github.token=123456 ./gradlew test`
+4. Set/change default in user `gradle.properties` file, usually in `~/.gradle/gradle.properties`, add values like `platform=staging github.token=123456` to file. This will then be the default and no need to specify on command line: `./gradlew test`.
+5. Set/change default in project `gradle.properties` file, in project root directory, add values like `platform=staging github.token=123456` to file. This will then be the default and no need to specify on command line: `./gradlew test`.
 
 ## Run the tests
-- From command line: `./gradlew clean test -Pgithub.token=3443344...`
-- From command line (specify token in `gradle.properties`): `./gradlew clean test`
-- From IntelliJ: Create a run configuration for the `test` folder and run Gradle tasks `:cleanTest :test` with arguments `--tests "org.example.*" -Pgithub.token=123...`
+These examples assume the platform and GitHub token properties have defaults set in a property file or environment variable. See above section for different ways to specify the platform at run time.
+- Run all tests: `./gradlew test`
+- Run all tests in one class: `./gradlew test --tests org.example.graphqldemo.QueryWithStringTest`
+- Run one test case: `./gradlew test --tests org.example.graphqldemo.QueryWithStringTest.queryWithDefaultParameter`
 
-## Task List
-- [ ] Decide on the best place for the config that will reside in a file. The current location of `src/test/resources/config.properties`, or `gradle.properties` or somewhere else? Regardless, some properties will probably have to be passed in via command line or environment variable.
-- [ ] Add logging?
+## References
+- GitHub GraphQL API: https://developer.github.com/v4/
+- GitHub GraphQL Docs: https://docs.github.com/en/free-pro-team@latest/graphql
 
-## Helpful Links
-- https://linchpiner.github.io/gradle-for-devops-2.html
+

@@ -2,6 +2,8 @@ plugins {
     id 'java-library'
 }
 
+sourceCompatibility = '15' // Need Java 15 for Text Blocks
+
 repositories {
     mavenCentral() // Repository from which we retrieve dependency libraries
 }
@@ -23,9 +25,13 @@ test {
             throw new InvalidUserDataException("GRADLE ERROR: Platform Property is '" + project.getProperty("platform") + "', but should be 'staging' or 'test'");
         }
         systemProperty "github.token", project.getProperty("github.token")
-        if (project.getProperty("github.token") == "my_placeholder" || project.getProperty("github.token") == "") {
+        if (project.getProperty("github.token") == "enter_github_token_here" || project.getProperty("github.token") == "") {
             throw new InvalidUserDataException("GRADLE ERROR: github.token Property is not set. Set in gradle.properties or with command line property");
         }
+
+        println "##################################################"
+        println "  Starting GraphQL Rest Assured Demo on platform: " + project.getProperty("platform")
+        println "##################################################"
     }
 
     dependsOn 'cleanTest' // Always run tests, even when nothing changed

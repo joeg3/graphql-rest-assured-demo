@@ -14,9 +14,8 @@ import java.util.Properties;
 import static io.restassured.RestAssured.given;
 
 public class BaseTest {
+  // These two properties are passed in through Gradle and required to run tests
   public static final String GITHUB_TOKEN = System.getProperty("github.token");
-
-  // Platform property passed in and verified in Gradle
   public static final String PLATFORM = System.getProperty("platform");
 
   public static  RequestSpecification REQ_SPEC;
@@ -96,14 +95,11 @@ public class BaseTest {
     Properties properties = new Properties();
     properties.load(ClassLoader.getSystemResourceAsStream("config.properties"));
 
-    // Platform verified in Gradle, so we kow it's either 'test' or 'staging'
-    String platform = PLATFORM.equals("test") ? "test" : "staging";
-
-    // Values from config.properties
-    BASE_URI = properties.getProperty(platform + ".api.base.uri"); // Api we are testing against
+    // Populate values from config.properties
+    BASE_URI = properties.getProperty(PLATFORM + ".api.base.uri"); // Api we are testing against
 
     // Expected results from calling API
-    GITHUB_NAME = properties.getProperty(platform + ".github.name");
-    GITHUB_URL = properties.getProperty(platform + ".github.url");
+    GITHUB_NAME = properties.getProperty(PLATFORM + ".github.name");
+    GITHUB_URL = properties.getProperty(PLATFORM + ".github.url");
   }
 }
