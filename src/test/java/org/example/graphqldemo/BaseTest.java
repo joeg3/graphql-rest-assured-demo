@@ -65,19 +65,6 @@ public class BaseTest {
              extract().jsonPath();
   }
 
-//  public static JsonPath apiCall(GraphQLPayloadDTO graphQL) {
-//    return given().
-//      spec(REQ_SPEC).
-//      // log().all().
-//      body(graphQL).
-//      when().
-//      post("").
-//      then().
-//      spec(RES_SPEC).
-//      // log().body().
-//      extract().jsonPath();
-//  }
-
   public static JsonPath apiCall(GraphQLPayload graphQL) {
     graphQL.removeNewlinesFromGraphQL();
     return given().
@@ -92,18 +79,18 @@ public class BaseTest {
              extract().jsonPath();
   }
 
-//  public static <T> T apiCall(GraphQLPayloadDTO graphQL, Class<T> responseClass) {
-//    return given().
-//    spec(REQ_SPEC).
-//      // log().all().
-//      body(graphQL).
-//      when().
-//      post("").
-//      then().
-//      spec(RES_SPEC).
-//      // log().body().
-//      extract().as(responseClass);
-//  }
+  public static <T> T apiCall(GraphQLPayload graphQL, Class<T> responseClass) {
+    return given().
+    spec(REQ_SPEC).
+      // log().all().
+      body(graphQL).
+      when().
+      post("").
+      then().
+      spec(RES_SPEC).
+      // log().body().
+      extract().as(responseClass);
+  }
 
   public static String removeNewlinesFromString(String graphQL) {
     return graphQL.replaceAll("[\\t\\n\\r]+","");
