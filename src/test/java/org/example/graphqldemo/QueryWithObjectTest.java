@@ -9,12 +9,10 @@ import static org.example.graphqldemo.BaseTest.*;
 import static org.example.graphqldemo.GraphQLQueries.*;
 
 /**
- * These are the same tests as `QueryWithStringTest.java`, but using
- * Java text blocks for better readability. The payload sent to the api
- * is JSON in the form of "query": {graphQL_Object}. So we'll just put
- * the GraphQL in a text block.
+ * These are the same tests as `QueryWithTextBlockTest.java`, but passing
+ * an object to Rest Assured for better readability.
  */
-public class QueryWithTextBlockTest {
+public class QueryWithObjectTest {
 
   @Test
   void basicQueryWithoutVariable() {
@@ -30,7 +28,7 @@ public class QueryWithTextBlockTest {
               }          
             }            
             """;
-    String requestPayload = String .format("{ \"query\": \"%s\" }", graphQLQuery);
+    GraphQLPayload requestPayload = new GraphQLPayload(graphQLQuery);
     JsonPath json = apiCall(requestPayload);
     assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
     assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
@@ -44,7 +42,7 @@ public class QueryWithTextBlockTest {
               }          
             }            
             """;
-    requestPayload = String .format("{ \"query\": \"%s\" }", graphQLQuery);
+    requestPayload = new GraphQLPayload(graphQLQuery);
     json = apiCall(requestPayload);
     assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
     assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
@@ -52,7 +50,7 @@ public class QueryWithTextBlockTest {
     // The GraphQL documentation recommends using the operation type
     // keyword and operation name (NameAndUrl) to make things less ambiguous
     // See: NAME_AND_URL_QUERY
-    requestPayload = String .format("{ \"query\": \"%s\" }", NAME_AND_URL_QUERY);
+    requestPayload = new GraphQLPayload(NAME_AND_URL_QUERY);
     json = apiCall(requestPayload);
     assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
     assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
@@ -60,7 +58,27 @@ public class QueryWithTextBlockTest {
 
   @Test
   void queryWithHardcodedVariables() {
-    String requestPayload = String .format("{ \"query\": \"%s\" }", MICROSOFT_FOUR_REPOS_QUERY);
+    // When using an object for the api call, we can't use
+    // GraphQLQueries.MICROSOFT_FOUR_REPOS_QUERY because double quotes use
+    // fewer escape characters. So we use this query.
+    String graphQLQuery = """
+            query MicrosoftFourRepos {                  
+              organization(login: \"microsoft\") {  
+                name                                    
+                url                                     
+                repositories(first: 4) {                
+                  edges {                               
+                    node {                              
+                      name                              
+                      description                       
+                    }                                   
+                  }                                     
+                  totalCount                            
+                }                                       
+              }                                         
+            }                                           
+            """;
+    GraphQLPayload requestPayload = new GraphQLPayload(graphQLQuery);
     JsonPath json = apiCall(requestPayload);
     assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
@@ -68,14 +86,8 @@ public class QueryWithTextBlockTest {
 
   @Test
   void queryWithVariablesQueryParameter() {
-    // Parameterize using the graphQL 'variables' construct
-    // This makes the query more reusable
-    String graphQLVariables = """
-           {                                     
-             \\\"orgName\\\": \\\"microsoft\\\"  
-           }                                     
-           """;
-    String requestPayload = String .format("{ \"query\": \"%s\", \"variables\": \"%s\"}", ORG_URL_QUERY, graphQLVariables);
+    GraphQLPayload requestPayload = new GraphQLPayload(ORG_URL_QUERY);
+    requestPayload.addVariable("orgName", "microsoft");
     JsonPath json = apiCall(requestPayload);
     assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
@@ -83,7 +95,18 @@ public class QueryWithTextBlockTest {
 
   @Test
   void queryWithDefaultParameter() {
-    String requestPayload = String .format("{ \"query\": \"%s\" }", MICROSOFT_ORG_URL_QUERY);
+    // When using an object for the api call, we can't use
+    // GraphQLQueries.MICROSOFT_ORG_URL_QUERY because double quotes use
+    // fewer escape characters. So we use this query.
+    String graphQLQuery = """
+            query MicrosoftOrgUrl($orgName: String = \"microsoft\") {  
+              organization(login: $orgName) {                              
+                name                                                       
+                url                                                        
+              }                                                            
+            }                                                              
+            """;
+    GraphQLPayload requestPayload = new GraphQLPayload(graphQLQuery);
     JsonPath json = apiCall(requestPayload);
     assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
@@ -93,12 +116,8 @@ public class QueryWithTextBlockTest {
   void queryPassArgumentToFieldWithFragment() {
     // This is a contrived example, but it shows how fragments
     // could be reused for large numbers of fields
-    String graphQLVariables = """
-           {                                     
-             \\\"orgName\\\": \\\"microsoft\\\"  
-           }                                     
-           """;
-    String requestPayload = String .format("{ \"query\": \"%s %s\", \"variables\": \"%s\"}", ORG_URL_QUERY_WITH_FRAGMENT, ORG_FIELDS_BASIC_FRAGMENT, graphQLVariables);
+    GraphQLPayload requestPayload = new GraphQLPayload(ORG_URL_QUERY_WITH_FRAGMENT + ORG_FIELDS_BASIC_FRAGMENT);
+    requestPayload.addVariable("orgName", "microsoft");
     JsonPath json = apiCall(requestPayload);
     assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
@@ -110,13 +129,9 @@ public class QueryWithTextBlockTest {
     // The organization field accepts a login argument but does not have a parameter for "first"
     // We use the query keyword to accept "orgName" and "first" arguments, and "first" can be used in the fragment
     // See FIRST_REPOS_FOR_ORG_QUERY_WITH_FRAGMENT and ORG_FIELDS_WITH_REPOS_FRAGMENT
-    String graphQLVariables = """
-           {                                     
-             \\\"orgName\\\": \\\"microsoft\\\", 
-             \\\"first\\\": 4                    
-           }                                     
-           """;
-    String requestPayload = String .format("{ \"query\": \"%s %s\", \"variables\": \"%s\"}", FIRST_REPOS_FOR_ORG_QUERY_WITH_FRAGMENT, ORG_FIELDS_WITH_REPOS_FRAGMENT, graphQLVariables);
+    GraphQLPayload requestPayload = new GraphQLPayload(FIRST_REPOS_FOR_ORG_QUERY_WITH_FRAGMENT + ORG_FIELDS_WITH_REPOS_FRAGMENT);
+    requestPayload.addVariable("orgName", "microsoft");
+    requestPayload.addVariable("first", 4);
     JsonPath json = apiCall(requestPayload);
     assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
     assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
