@@ -1,0 +1,6 @@
+query MicrosoftOrgUrl($orgName: String = \"microsoft\") {
+              organization(login: $orgName) {
+                name
+                url
+              }
+            }

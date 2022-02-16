@@ -1,0 +1,5 @@
+query FirstReposForOrg($orgName: String! $first: Int!) {
+              organization(login: $orgName) {
+                ...organizationFields
+              }
+            }
