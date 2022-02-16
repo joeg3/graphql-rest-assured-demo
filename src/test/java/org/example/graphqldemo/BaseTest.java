@@ -21,7 +21,7 @@ public class BaseTest {
   public static  ResponseSpecification RES_SPEC;
 
   // Values from config.properties
-  private static String BASE_URI;
+  public static String BASE_URI;
   public static String GITHUB_NAME;
   public static String GITHUB_URL;
 

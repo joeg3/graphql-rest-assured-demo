@@ -8,6 +8,7 @@ Demo of Rest Assured for testing GraphQL APIs
     - Tests in the `QueryWithTextBlockTest` class uses text blocks for GraphQL queries in the `GraphQLQueries` class where they are more readable and reusable.
     - Tests in the `QueryWithObjectTest` class reuses the text blocks from the previous test cases, and uses an object instead of strings for the JSON boilerplate that Rest Assured needs to send.
     - Tests in the `QueryReturnObjectTest` class is like `QueryWithObjectTest` except they return Java POJO objects instead of `JsonPath`.
+    - Tests in the `QueryUsingOurApiTest` class is like `QueryWithObjectTest` except it uses the `GitHubApi` class which we created. `GitHubApi` hides details of constructing the api call, making each test case simpler, but possibly harder to understand what's going on.
 
 ## To Create a Java Project Like This From Scratch
 - Install `gradle`.
