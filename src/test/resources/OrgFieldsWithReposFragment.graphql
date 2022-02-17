@@ -1,0 +1,13 @@
+fragment organizationFields on Organization {
+              name
+              url
+              repositories (first: $first) {
+                edges {
+                  node {
+                    name
+                    description
+                  }
+                }
+                totalCount
+              }
+            }

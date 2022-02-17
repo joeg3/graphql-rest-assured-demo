@@ -1,5 +1,6 @@
 package org.example.graphqldemo;
 
+import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import org.junit.jupiter.api.Test;
 
@@ -8,10 +9,12 @@ import static org.example.graphqldemo.BaseTest.*;
 import static org.example.graphqldemo.GraphQLQueries.*;
 
 /**
- * These are the same tests as `QueryWithTextBlockTest.java`, but passing
- * an object to Rest Assured for better readability.
+ * These are the same tests as `QueryWithObjectTest.java`, but the
+ * rest api call sets the root at "data" so that the root element "data"
+ * in the returned JsonPath isn't part of the expectation for better readability,
+ * but if you do a jsonPath.prettyPrint(), it includes the root.
  */
-public class QueryWithObjectTest {
+public class QuerySettingRootTest {
 
   @Test
   void basicQueryWithoutVariable() {
@@ -28,9 +31,9 @@ public class QueryWithObjectTest {
             }            
             """;
     GraphQLPayload requestPayload = new GraphQLPayload(graphQLQuery);
-    JsonPath json = apiCall(requestPayload);
-    assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
-    assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
+    JsonPath json = apiCallRootPathData(requestPayload);
+    assertThat(json.getString("viewer.name")).isEqualTo(GITHUB_NAME);
+    assertThat(json.getString("viewer.url")).isEqualTo(GITHUB_URL);
 
     // Here we use the 'query' keyword for operation type
     graphQLQuery = """
@@ -42,29 +45,29 @@ public class QueryWithObjectTest {
             }            
             """;
     requestPayload = new GraphQLPayload(graphQLQuery);
-    json = apiCall(requestPayload);
-    assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
-    assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
+    json = apiCallRootPathData(requestPayload);
+    assertThat(json.getString("viewer.name")).isEqualTo(GITHUB_NAME);
+    assertThat(json.getString("viewer.url")).isEqualTo(GITHUB_URL);
 
     // The GraphQL documentation recommends using the operation type
     // keyword and operation name (NameAndUrl) to make things less ambiguous
     // See: NAME_AND_URL_QUERY
     requestPayload = new GraphQLPayload(NAME_AND_URL_QUERY);
 
-    json = apiCall(requestPayload);
+    json = apiCallRootPathData(requestPayload);
 
-    assertThat(json.getString("data.viewer.name")).isEqualTo(GITHUB_NAME);
-    assertThat(json.getString("data.viewer.url")).isEqualTo(GITHUB_URL);
+    assertThat(json.getString("viewer.name")).isEqualTo(GITHUB_NAME);
+    assertThat(json.getString("viewer.url")).isEqualTo(GITHUB_URL);
   }
 
   @Test
   void queryWithHardcodedVariables() {
     GraphQLPayload requestPayload = new GraphQLPayload(MICROSOFT_HARDCODED_QUERY);
 
-    JsonPath json = apiCall(requestPayload);
+    JsonPath json = apiCallRootPathData(requestPayload);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    assertThat(json.getString("organization.name")).isEqualTo("Microsoft");
+    assertThat(json.getString("organization.url")).isEqualTo("https://github.com/microsoft");
   }
 
   @Test
@@ -72,20 +75,20 @@ public class QueryWithObjectTest {
     GraphQLPayload requestPayload = new GraphQLPayload(ORG_URL_QUERY);
     requestPayload.addVariable("orgName", "microsoft");
 
-    JsonPath json = apiCall(requestPayload);
+    JsonPath json = apiCallRootPathData(requestPayload);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    assertThat(json.getString("organization.name")).isEqualTo("Microsoft");
+    assertThat(json.getString("organization.url")).isEqualTo("https://github.com/microsoft");
   }
 
   @Test
   void queryWithDefaultParameter() {
     GraphQLPayload requestPayload = new GraphQLPayload(MICROSOFT_DEFAULT_QUERY);
 
-    JsonPath json = apiCall(requestPayload);
+    JsonPath json = apiCallRootPathData(requestPayload);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    assertThat(json.getString("organization.name")).isEqualTo("Microsoft");
+    assertThat(json.getString("organization.url")).isEqualTo("https://github.com/microsoft");
   }
 
   @Test
@@ -94,10 +97,10 @@ public class QueryWithObjectTest {
     GraphQLPayload requestPayload = new GraphQLPayload(ORG_URL_QUERY_WITH_FRAGMENT + ORG_FIELDS_BASIC_FRAGMENT);
     requestPayload.addVariable("orgName", "microsoft");
 
-    JsonPath json = apiCall(requestPayload);
+    JsonPath json = apiCallRootPathData(requestPayload);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
+    assertThat(json.getString("organization.name")).isEqualTo("Microsoft");
+    assertThat(json.getString("organization.url")).isEqualTo("https://github.com/microsoft");
   }
 
   @Test
@@ -109,10 +112,10 @@ public class QueryWithObjectTest {
     requestPayload.addVariable("orgName", "microsoft");
     requestPayload.addVariable("first", 4);
 
-    JsonPath json = apiCall(requestPayload);
+    JsonPath json = apiCallRootPathData(requestPayload);
 
-    assertThat(json.getString("data.organization.name")).isEqualTo("Microsoft");
-    assertThat(json.getString("data.organization.url")).isEqualTo("https://github.com/microsoft");
-    assertThat(json.getInt("data.organization.repositories.edges.size")).isEqualTo(4);
+    assertThat(json.getString("organization.name")).isEqualTo("Microsoft");
+    assertThat(json.getString("organization.url")).isEqualTo("https://github.com/microsoft");
+    assertThat(json.getInt("organization.repositories.edges.size")).isEqualTo(4);
   }
 }

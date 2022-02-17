@@ -1,0 +1,6 @@
+query OrgUrl($orgName: String!) {
+              organization(login: $orgName) {
+                name
+                url
+              }
+            }

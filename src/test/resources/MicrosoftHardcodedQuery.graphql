@@ -1,0 +1,15 @@
+query MicrosoftFourRepos {
+              organization(login: \"microsoft\") {
+                name
+                url
+                repositories(first: 4) {
+                  edges {
+                    node {
+                      name
+                      description
+                    }
+                  }
+                  totalCount
+                }
+              }
+            }
