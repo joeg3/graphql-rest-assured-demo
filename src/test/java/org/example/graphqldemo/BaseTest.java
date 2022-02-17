@@ -1,5 +1,6 @@
 package org.example.graphqldemo;
 
+import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.http.ContentType;
@@ -77,6 +78,22 @@ public class BaseTest {
              spec(RES_SPEC).
              // log().all().
              extract().jsonPath();
+  }
+
+  public static JsonPath apiCallRootPathData(GraphQLPayload graphQL) {
+    graphQL.removeNewlinesFromGraphQL();
+
+    return given().
+             spec(REQ_SPEC).
+             // log().all().
+             body(graphQL).
+           when().
+             post("").
+           then().
+             rootPath("data").
+             spec(RES_SPEC).
+             //log().all().
+             extract().jsonPath().setRootPath("data");
   }
 
   public static <T> T apiCall(GraphQLPayload graphQL, Class<T> responseClass) {

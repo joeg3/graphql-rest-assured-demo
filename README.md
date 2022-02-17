@@ -4,12 +4,13 @@ Demo of Rest Assured for testing GraphQL APIs
 ## Project Info
 - This GraphQL demo tests against a GitHub API at https://api.github.com/graphql using a [personal access token](https://github.com/settings/tokens)
 - Test Cases: all test classes run the same tests, but do it in different ways:
-    - Tests in the `QueryWithStringTest` class is the most basic and just put the GraphQL queries in strings.
-    - Tests in the `QueryWithTextBlockTest` class uses text blocks for GraphQL queries in the `GraphQLQueries` class where they are more readable and reusable.
-    - Tests in the `QueryWithObjectTest` class reuses the text blocks from the previous test cases, and uses an object instead of strings for the JSON boilerplate that Rest Assured needs to send.
-    - Tests in the `QueryReturnObjectTest` class is like `QueryWithObjectTest` except they return Java POJO objects instead of `JsonPath`.
-    - Tests in the `QueryUsingOurApiTest` class is like `QueryWithObjectTest` except it uses the `GitHubApi` class which we created. `GitHubApi` hides details of constructing the api call, making each test case simpler, but possibly harder to understand what's going on.
-    - Tests in the `QueryWithFileTest` class uses queries stored in `.graphql` files. This has the advantage if an organization want's to keep the latest version of the queries in individual files where they can be in source control and used by others with tools like Postman, but at the expense of extra complexity for the test cases.
+    - Tests in the `QueryWithStringTest` class are the most basic and just put the GraphQL queries in strings.
+    - Tests in the `QueryWithTextBlockTest` class use text blocks for GraphQL queries in the `GraphQLQueries` class where they are more readable and reusable.
+    - Tests in the `QueryWithObjectTest` class reuse the text blocks from the previous test cases, and uses an object instead of strings for the JSON boilerplate that Rest Assured needs to send.
+    - Tests in the `QueryReturnObjectTest` class are like `QueryWithObjectTest` except they return Java POJO objects instead of `JsonPath`.
+    - Tests in the `QueryUsingOurApiTest` class are like `QueryWithObjectTest` except it uses the `GitHubApi` class which we created. `GitHubApi` hides details of constructing the api call, making each test case simpler, but possibly harder to understand what's going on.
+    - Tests in the `QueryWithFileTest` class use queries stored in `.graphql` files. This has the advantage if an organization want's to keep the latest version of the queries in individual files where they can be in source control and used by others with tools like Postman, but at the expense of extra complexity for the test cases.
+    - Tests in the `QuerySettingRootTest` class are like `QueryWithObjectTest` except in their Rest Assured call, the root is set to "data" so it can be removed from the JsonPath validation to reduce noise.
 
 ## To Create a Java Project Like This From Scratch
 - Install `gradle`.
